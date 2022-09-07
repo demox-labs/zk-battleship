@@ -1,10 +1,11 @@
 {
     "program": "battleship.aleo",
     "version": "0.0.0",
-    "description": "",
+    "description": "Play ZK Battleship",
     "development": {
-        "private_key": "APrivateKey1zkp3gT5ahXizBZtgJAxTwtgy5e2dh7wSrptDBTsbzisvJBS",
-        "address": "aleo10z7anrc0cmw0r68vq67000ruxsmjtt3qd2sml0v23rhq0mr6lqzq3zdaq4"
+        "private_key": "APrivateKey1zkp86FNGdKxjgAdgQZ967bqBanjuHkAaoRe19RK24ZCGsHH",
+        "view_key": "AViewKey1hh6dvSEgeMdfseP4hfdbNYjX4grETwCuTbKnCftkpMwE",
+        "address": "aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry"
     },
     "license": "MIT"
 }

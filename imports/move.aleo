@@ -23,7 +23,7 @@ function create_move:
     is.eq r0.owner r0.player_1 into r3;
     ternary r3 r0.player_2 r0.player_1 into r4;
 
-    cast r4 r0.gates r1 r0.player_1 r0.player_2 r2 into r5 as move.record;
+    cast r4 r0.gates r1 r0.player_2 r0.player_1 r2 into r5 as move.record;
 
     output r5 as move.record;
 

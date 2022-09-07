@@ -1,4 +1,420 @@
-ZK Battleship
+# ZK Battleship
+
+## QuickStart
+
+### Build Guide
+
+To compile this Aleo program, run:
+```bash
+aleo build
+```
+
+### Usage Guide
+
+In order to play battleship, there must be two players with two boards. Navigate to the zk-battleship aleo project. Then create two new aleo accounts:
+```bash
+aleo account new
+>>>  Private Key  APrivateKey1zkpGKaJY47BXb6knSqmT3JZnBUEGBDFAWz2nMVSsjwYpJmm
+>>>     View Key  AViewKey1fSyEPXxfPFVgjL6qcM9izWRGrhSHKXyN3c64BNsAjnA6
+>>>      Address  aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy
+
+aleo account new
+>>>  Private Key  APrivateKey1zkp86FNGdKxjgAdgQZ967bqBanjuHkAaoRe19RK24ZCGsHH
+>>>     View Key  AViewKey1hh6dvSEgeMdfseP4hfdbNYjX4grETwCuTbKnCftkpMwE
+>>>      Address  aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry
+```
+
+Save the keys and addresses. Set the `program.json` private_key and address to one of the newly created aleo accounts. We'll refer to this address as Player 1, and the remaining address as Player 2.
+
+```json
+{
+    "program": "battleship.aleo",
+    "version": "0.0.0",
+    "description": "Play ZK Battleship",
+    "development": {
+        "private_key": "APrivateKey1zkpGKaJY47BXb6knSqmT3JZnBUEGBDFAWz2nMVSsjwYpJmm",
+        "view_key": "AViewKey1fSyEPXxfPFVgjL6qcM9izWRGrhSHKXyN3c64BNsAjnA6",
+        "address": "aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy"
+    },
+    "license": "MIT"
+}
+```
+
+Now, we need to make a board as Player 1. See the `Modeling the board and ships` section for information on valid ship bitstrings and placements on the board. For this example, we will be using sample valid inputs. Initialize a new board as Player 1 with valid ship inputs and Player 2's address: `aleo run initialize_board ship_5_bitstring ship_4_bitstring ship_3_bitstring ship_2_bitstring player_2_address`
+```bash
+aleo run initialize_board 34084860461056u64 551911718912u64 7u64 1157425104234217472u64 aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry
+
+>>> ➡️  Output
+
+ • {
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 0u64.private,
+  ships: 1157459741006397447u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  game_started: false.private,
+  _nonce: 3887646704618532506963887075433683846689834495661101507703164090915348189037group.public
+}
+
+✅ Executed 'battleship.aleo/initialize_board'
+```
+
+The output is a board_state record owned by Player 1. Notice that the `game_started` flag is false, as well as the composite ship configuration `ships`. 1157459741006397447u64 to a binary bitstring becomes `0001000000010000000111111000000010000000100000001000000000000111`, or laid out in columns and rows:
+```
+0 0 0 1 0 0 0 0
+0 0 0 1 0 0 0 0
+0 0 0 1 1 1 1 1
+1 0 0 0 0 0 0 0
+1 0 0 0 0 0 0 0
+1 0 0 0 0 0 0 0
+1 0 0 0 0 0 0 0
+0 0 0 0 0 1 1 1
+```
+
+Now, we can offer a battleship game to player 2. Run `aleo run offer_battleship 'board_state.record'` with the record you just created:
+```bash
+aleo run offer_battleship '{
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 0u64.private,
+  ships: 1157459741006397447u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  game_started: false.private,
+  _nonce: 3887646704618532506963887075433683846689834495661101507703164090915348189037group.public
+}'
+
+>>> ➡️  Outputs
+
+ • {
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 0u64.private,
+  ships: 1157459741006397447u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  game_started: true.private,
+  _nonce: 6563064852163330630334088854834332804417910882908622526775624018226782316843group.public
+}
+ • {
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  incoming_fire_coordinate: 0u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  prev_hit_or_miss: 0u64.private,
+  _nonce: 4374626042494973146987320062571809401151262172766172816829659487584978644457group.public
+}
+
+✅ Executed 'battleship.aleo/offer_battleship'
+```
+
+The first output record is the udpated board_state.record. Notice the `game_started` flag is now true. This board cannot be used to offer any other battleship games or accept any battleship game offers. Player 1 would need to initialize a new board and use that instead. The second output record is a dummy move.record -- there are no fire coordinates included to play on Player 2's board, and no information about any previous Player 2 moves (Player 2 has not made any moves yet). This move.record is owned by Player 2, who must use that in combination with their own board_state.record to accept the game. Let's do that now.
+
+We must run the program as Player 2 now, so switch the `program.json` file to use Player 2's keys:
+```json
+{
+    "program": "battleship.aleo",
+    "version": "0.0.0",
+    "description": "Play ZK Battleship",
+    "development": {
+        "private_key": "APrivateKey1zkp86FNGdKxjgAdgQZ967bqBanjuHkAaoRe19RK24ZCGsHH",
+        "view_key": "AViewKey1hh6dvSEgeMdfseP4hfdbNYjX4grETwCuTbKnCftkpMwE",
+        "address": "aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry"
+    },
+    "license": "MIT"
+}
+```
+
+We'll create a new and different board for Player 2, and make sure to include Player 1's address as the opponent:
+```bash
+aleo run initialize_board 31u64 2207646875648u64 224u64 9042383626829824u64 aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy
+
+>>> ➡️  Output
+
+ • {
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 0u64.private,
+  ships: 9044591273705727u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  game_started: false.private,
+  _nonce: 1549419609469324182591325047490602235361156298832591378925133482196483208807group.public
+}
+
+✅ Executed 'battleship.aleo/initialize_board'
+```
+
+Now, we can accept Player 1's offer. Run `aleo run start_battleship 'board_state.record' 'move.record'`:
+```bash
+aleo run start_battleship '{
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 0u64.private,
+  ships: 9044591273705727u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  game_started: false.private,
+  _nonce: 1549419609469324182591325047490602235361156298832591378925133482196483208807group.public
+}' '{
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  incoming_fire_coordinate: 0u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  prev_hit_or_miss: 0u64.private,
+  _nonce: 4374626042494973146987320062571809401151262172766172816829659487584978644457group.public
+}'
+
+>>> ➡️  Outputs
+
+ • {
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 0u64.private,
+  ships: 9044591273705727u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  game_started: true.private,
+  _nonce: 6222383571142756260765569201308836492199048237638652378826141459336360362251group.public
+}
+ • {
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  incoming_fire_coordinate: 0u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  prev_hit_or_miss: 0u64.private,
+  _nonce: 3742551407126138397717446975757978589064777004441277005584760115236217735495group.public
+}
+
+✅ Executed 'battleship.aleo/start_battleship'
+```
+
+Notice the outputs here are similar to `offer_battleship`. A dummy move.record is owned by Player 1, and Player 2 gets a board_state.record with the `game_started` flag updated. However, now that Player 1 has a move.record and a started board, they can begin to play. Switch `program.json`'s keys back to Player 1's. Player 1 now makes the first real move: `aleo run play 'board_state.record' 'move.record' fire_coordinate`
+```bash
+aleo run play '{
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 0u64.private,
+  ships: 1157459741006397447u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  game_started: true.private,
+  _nonce: 6563064852163330630334088854834332804417910882908622526775624018226782316843group.public
+}' '{
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  incoming_fire_coordinate: 0u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  prev_hit_or_miss: 0u64.private,
+  _nonce: 3742551407126138397717446975757978589064777004441277005584760115236217735495group.public
+}' 1u64
+
+>>> ➡️  Outputs
+
+ • {
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 1u64.private,
+  ships: 1157459741006397447u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  game_started: true.private,
+  _nonce: 1474170213684980843727833284550698461565286563122422722760769547002894080093group.public
+}
+ • {
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  incoming_fire_coordinate: 1u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  prev_hit_or_miss: 0u64.private,
+  _nonce: 5481529266389297320813092061136936339861329677911328036818179854958874588416group.public
+}
+
+✅ Executed 'battleship.aleo/play'
+```
+
+Player 1 has an updated board_state.record -- they have a new `played_tiles` bitstring, which corresponds to the fire coordinate they just sent to Player 2. You can see that the `incoming_fire_coordinate` in the move.record owned by Player 2 matches exactly the input given by Player 1. Player 2 can now play this move tile and respond with a fire coordinate of their own, and they will also let Player 1 know whether or not Player 1's fire coordinate hit or miss Player 2's ships.
+
+Switch `program.json` to Player 2's keys. Player 2 makes their move:
+```bash
+aleo run play '{
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 0u64.private,
+  ships: 9044591273705727u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  game_started: true.private,
+  _nonce: 6222383571142756260765569201308836492199048237638652378826141459336360362251group.public
+}' '{
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  incoming_fire_coordinate: 1u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  prev_hit_or_miss: 0u64.private,
+  _nonce: 5481529266389297320813092061136936339861329677911328036818179854958874588416group.public
+}' 2048u64
+
+>>> ➡️  Outputs
+
+ • {
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 2048u64.private,
+  ships: 9044591273705727u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  game_started: true.private,
+  _nonce: 5254963165391133332409074172682159033621708071536429341861038147524454777097group.public
+}
+ • {
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  incoming_fire_coordinate: 2048u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  prev_hit_or_miss: 1u64.private,
+  _nonce: 5851606198769770675504009323414373017067582072428989801313256693053765675198group.public
+}
+
+✅ Executed 'battleship.aleo/play'
+```
+
+Player 2 now has an updated board_state.record which includes their newly updated `played_tiles`, only containing the fire coordinate they just sent to Player 1. Player 1 now owns an updated move.record which contains the result of Player 1's previous move -- a miss is 0u64, whereas a hit is the coordinate of the hit in bitstring form. Since Player 1's first fire coordinate, 1u64, was a hit, the return hit or miss is also 1u64.
+
+Player 1's next move will consume this move.record, which will update Player 1's board with the hit-or-miss, as well as figure out the result of Player 2's fire coordinate. Now that Player 1 has some `played_tiles`, they can no longer choose an alread-played fire coordinate. For example, running `aleo run play 'board_state.record' 'move.record' 1u64` will fail, because 1u64 has already been played.
+
+Switch `program.json` to use Player 1's keys. Run:
+```bash
+aleo run play '{
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 1u64.private,
+  ships: 1157459741006397447u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  game_started: true.private,
+  _nonce: 1474170213684980843727833284550698461565286563122422722760769547002894080093group.public
+}' '{
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  incoming_fire_coordinate: 2048u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  prev_hit_or_miss: 1u64.private,
+  _nonce: 5851606198769770675504009323414373017067582072428989801313256693053765675198group.public
+}' 2u64
+
+>>> ➡️  Outputs
+
+ • {
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  hits_and_misses: 1u64.private,
+  played_tiles: 3u64.private,
+  ships: 1157459741006397447u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  game_started: true.private,
+  _nonce: 853278652528988609827041334083853520436225751739504321439524466875699631772group.public
+}
+ • {
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  incoming_fire_coordinate: 2u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  prev_hit_or_miss: 0u64.private,
+  _nonce: 710336412388939616658264778971886770861024495941253598683184288448156545822group.public
+}
+
+✅ Executed 'battleship.aleo/play'
+```
+
+As before, both a board_state.record and move.record are created. The board_state.record now contains 3u64 as the `played_tiles`, which looks like this in bitstring form:
+```
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 1 1
+```
+
+The board_state.record `hits_and_misses` field has also been updated with the result of their previous move. The new move.record owned by Player 2 now contains information about whether Player 2's previous move was a hit or miss, as well as Player 1's new fire coordinate.
+
+Switch `program.json`'s keys to Player 2. Player 2 makes their next move:
+```bash
+aleo run play '{
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 2048u64.private,
+  ships: 9044591273705727u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  game_started: true.private,
+  _nonce: 5254963165391133332409074172682159033621708071536429341861038147524454777097group.public
+}' '{
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  incoming_fire_coordinate: 2u64.private,
+  player_1: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  player_2: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  prev_hit_or_miss: 0u64.private,
+  _nonce: 710336412388939616658264778971886770861024495941253598683184288448156545822group.public
+}' 4u64
+
+>>> ➡️  Outputs
+
+ • {
+  owner: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  gates: 0u64.private,
+  hits_and_misses: 0u64.private,
+  played_tiles: 2052u64.private,
+  ships: 9044591273705727u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  game_started: true.private,
+  _nonce: 1145182747531998766752104305052328886102707397061849372000385383229513301534group.public
+}
+ • {
+  owner: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  gates: 0u64.private,
+  incoming_fire_coordinate: 4u64.private,
+  player_1: aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry.private,
+  player_2: aleo15g9c69urtdhvfml0vjl8px07txmxsy454urhgzk57szmcuttpqgq5cvcdy.private,
+  prev_hit_or_miss: 2u64.private,
+  _nonce: 5958326936461495382488152485080596366937963499216527548334225566230682598418group.public
+}
+
+✅ Executed 'battleship.aleo/play'
+```
+
+Play continues back and forth between Player 1 and Player 2. When one player has a total of 14 flipped bits in their `hits_and_misses` field on their board_state.record, they have won the game.
+
+
+## Strategy for Creating ZK Battleship
 
 Battleship is a game where two players lay their ships into secret configurations on their respective 8x8 grids, and then take turns firing upon each other's board. The game ends when one player has sunk all of the other player's ships.
 
@@ -14,6 +430,8 @@ Broadly speaking, we can follow this general strategy:
 4. Enforce constraints on valid moves, and force the player to give their opponent information about their opponent's previous move in order to continue playing.
 
 See the github repo in order to follow along.
+
+## Modeling the board and ships
 
 Most battleship representations in programs use a 64 character string or an array of arrays (8 arrays of 8 elements each) to model the board state. Unfortunately, Aleo instructions don't represent strings well yet, nor can we use for or while loops. Luckily for us, Aleo has the unsigned 64 bit integer type, or u64. To represent every space on a battleship board, from top left to bottom right, we can use each bit in a u64. For example, an empty board would be:
 0u64 =
@@ -40,7 +458,9 @@ Length 4: 1 00000001 00000001 00000001          = 16843009u64
 Length 3: 1 00000001 00000001                   = 65793u64
 Length 2: 1 00000001                            = 257u64
 
-With a board model and ship bitstring models, we can now place ships on a board. Examples of valid board configurations:
+With a board model and ship bitstring models, we can now place ships on a board.
+
+<details><summary>Examples of valid board configurations:</summary>
 
 17870284429256033024u64
 1 1 1 1 1 0 0 0
@@ -71,8 +491,9 @@ With a board model and ship bitstring models, we can now place ships on a board.
 0 0 0 0 0 0 0 1
 0 0 0 0 0 0 0 1
 0 0 0 0 0 0 0 1
+</details>
 
-Examples of invalid board configurations:
+<details><summary>Examples of invalid board configurations:</summary>
 
 Ships overlapping the bottom ship
 67503903u64
@@ -106,10 +527,11 @@ Ships splitting across rows and columns:
 0 0 0 1 0 0 0 0
 0 0 0 1 0 0 1 0
 0 0 0 1 0 0 1 0
+</details>
 
 Given these rules, our strategy will be to validate each individaul ship bitstring placement on a board, and then, if all the ships are valid, compose all the positions onto a board and validate that the board with all ships are valid. If each individual ship's position is valid, then all the ships together should be valid unless any overlapping occurs.
 
-Validating a single ship at a time
+## Validating a single ship at a time
 
 To follow along with the code, all verification of ship bitstrings is done in verify.aleo. We know a ship is valid if all these conditions are met:
 If horizontal:
@@ -124,7 +546,7 @@ If vertical:
 
 If a ship is valid vertically or horizontally, then we know the ship is valid. We just need to check for the bit count, the adjacency of those bits, and make sure those bits do not split a row/column. However, we can't loop through the bit string to count bits, or to make sure those bits don't break across columns. We'll need to turn to special bitwise operations and hacks.
 
-Bit Counting
+### Bit Counting
 
 See the "c_bitcount" closure to follow along with the code. 50 years ago, MIT AI Laboratory published HAKMEM, which was a series of tricks and hacks to speed up processing for bitwise operations. https://w3.pppl.gov/~hammett/work/2009/AIM-239-ocr.pdf We turned to HAKMEM 169 for bitcounting inspiration, although we've tweaked our implementation to be (hopefully) easier to understand. Before diving into details, let's build some intuition.
 
@@ -191,7 +613,7 @@ let B = A - (A>>1 & 8608480567731124087u64) - (A>>2 & 3689348814741910323u64) - 
 let C = (B - B>>4) & 1085102592571150095u64
 bit count = C mod 255u64
 
-Adjacency Check
+### Adjacency Check
 
 Given a ship's placement on the board and its bitstring representation (horizontally or vertically), we can determine if the bits are adjacent. Follow the c_adjacency_check closure in verify.aleo. Given the ship of length 2, we know it's horizontal bitstring is 11 (3u64) and it's vertical bitstring is 100000001 (257u64). If on the board, the ship starts at the bottom right corner, its horizontal ship placement string would be:
 3u64
@@ -290,7 +712,7 @@ mod 255 = 11000001
 
 How do we know the 8 bit bitstring is valid or not? We can simply do an adjacency check, as before.
 
-Bit trick for ensuring a bitstring is a power of 2:
+### Bit trick for ensuring a bitstring is a power of 2:
 
 Any power of 2 will have a single bit flipped. If we subtract 1 from that number, it will result in a complementary bitstring that, bitwise-anded with the original, will always result in 0.
 
@@ -303,7 +725,7 @@ E.g.
 7-1: 0110
 7&6: 0110 != 0
 
-Validating all ships together in a single board
+## Validating all ships together in a single board
 
 Give individual valid ship position bitstrings, we can combine all these together into a single board using bitwise or operators. See the create_board function in verify.aleo to follow the code. Once all ships are on the board, we can count the total number of bits, which should be 14 exactly for a ship of length 5, 4, 3, and 2.
 
@@ -316,16 +738,16 @@ Board states are represented with the board_state record. Each board has a flag 
 
 The only way moves _not_ matching a board can be combined is if the players begin multiple games with each other. As long as one player is honest and only accepts a single game with a particular opponent, only one set of moves can be played on one board between them.
 
-Ensure that each player can only move once before the next player can move
+## Ensure that each player can only move once before the next player can move
 
 A move record must be consumed in order to create the next move record. The owner of the move record changes with each play. Player A must spend a move record in order to create a move record containing their fire coordinate, and that move record will be owned by Player B. Player B must spend that move record in order to create the next move record, which will belong to Player A.
 
-Enforce constraints on valid moves, and force the player to give their opponent information about their opponent's previous move in order to continue playing
+## Enforce constraints on valid moves, and force the player to give their opponent information about their opponent's previous move in order to continue playing
 
 A valid move for a player is a fire coordinate that has only one flipped bit in a u64. We can make sure only one bit is flipped with the powers of 2 bit trick. That single bit must be a coordinate that has not been played by that player before, which we check in board.aleo/update_played_tiles.
 
 In order to give their next move to their opponent, a player must call the main.aleo/play function, which checks the opponent's fire coordinate on the current player's board. The move record being created is updated with whether that fire coordinate was a hit or a miss for the opponent.
 
-Winning the game
+## Winning the game
 
-Right now, the way to check when a game has been one is to count the number of hits on your hits_and_misses field on your board_state record. Once you have 14 hits, you've won the game.
+Right now, the way to check when a game has been won is to count the number of hits on your hits_and_misses field on your board_state record. Once you have 14 hits, you've won the game.
