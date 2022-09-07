@@ -10,6 +10,7 @@ aleo build
 ```
 
 ### Usage Guide
+<details><summary>Commands and Playing the Game</summary>
 
 In order to play battleship, there must be two players with two boards. Navigate to the zk-battleship aleo project. Then create two new aleo accounts:
 ```bash
@@ -40,7 +41,7 @@ Save the keys and addresses. Set the `program.json` private_key and address to o
 }
 ```
 
-Now, we need to make a board as Player 1. See the `Modeling the board and ships` section for information on valid ship bitstrings and placements on the board. For this example, we will be using sample valid inputs. Initialize a new board as Player 1 with valid ship inputs and Player 2's address: `aleo run initialize_board ship_5_bitstring ship_4_bitstring ship_3_bitstring ship_2_bitstring player_2_address`
+Now, we need to make a board as Player 1. See the [modeling the boards and ships](https://github.com/demox-labs/zk-battleship/#modeling-the-board-and-ships) section for information on valid ship bitstrings and placements on the board. For this example, we will be using sample valid inputs. Initialize a new board as Player 1 with valid ship inputs and Player 2's address: `aleo run initialize_board ship_5_bitstring ship_4_bitstring ship_3_bitstring ship_2_bitstring player_2_address`
 ```bash
 aleo run initialize_board 34084860461056u64 551911718912u64 7u64 1157425104234217472u64 aleo1wyvu96dvv0auq9e4qme54kjuhzglyfcf576h0g3nrrmrmr0505pqd6wnry
 
@@ -412,7 +413,7 @@ aleo run play '{
 ```
 
 Play continues back and forth between Player 1 and Player 2. When one player has a total of 14 flipped bits in their `hits_and_misses` field on their board_state.record, they have won the game.
-
+</details>
 
 ## Strategy for Creating ZK Battleship
 
@@ -504,6 +505,8 @@ With a board model and ship bitstring models, we can now place ships on a board.
 0 0 0 0 0 0 0 1  
 ```
 
+</details>
+
 <details><summary>Examples of invalid board configurations:</summary>
 
 Ships overlapping the bottom ship:  
@@ -544,6 +547,7 @@ Ships splitting across rows and columns:
 0 0 0 1 0 0 1 0  
 0 0 0 1 0 0 1 0  
 ```
+</details>
 
 Given these rules, our strategy will be to validate each individaul ship bitstring placement on a board, and then, if all the ships are valid, compose all the positions onto a board and validate that the board with all ships are valid. If each individual ship's position is valid, then all the ships together should be valid unless any overlapping occurs.
 
@@ -562,7 +566,7 @@ If vertical:
 
 If a ship is valid vertically or horizontally, then we know the ship is valid. We just need to check for the bit count, the adjacency of those bits, and make sure those bits do not split a row/column. However, we can't loop through the bit string to count bits, or to make sure those bits don't break across columns. We'll need to turn to special bitwise operations and hacks.
 
-### Bit Counting
+<details><summary>Bit Counting</summary>
 
 See the "c_bitcount" closure to follow along with the code. 50 years ago, MIT AI Laboratory published HAKMEM, which was a series of tricks and hacks to speed up processing for bitwise operations. https://w3.pppl.gov/~hammett/work/2009/AIM-239-ocr.pdf We turned to HAKMEM 169 for bitcounting inspiration, although we've tweaked our implementation to be (hopefully) easier to understand. Before diving into details, let's build some intuition.
 
@@ -634,7 +638,9 @@ let B = A - (A>>1 & 8608480567731124087u64) - (A>>2 & 3689348814741910323u64) - 
 let C = (B - B>>4) & 1085102592571150095u64
 bit count = C mod 255u64
 
-### Adjacency Check
+</details>
+
+<details><summary>Adjacency Check</summary>
 
 Given a ship's placement on the board and its bitstring representation (horizontally or vertically), we can determine if the bits are adjacent. Follow the c_adjacency_check closure in verify.aleo. Given the ship of length 2, we know it's horizontal bitstring is 11 (3u64) and it's vertical bitstring is 100000001 (257u64). If on the board, the ship starts at the bottom right corner, its horizontal ship placement string would be:  
 3u64  
@@ -748,7 +754,9 @@ mod 255 = 11000001 (invalid)
 
 How do we know the 8 bit bitstring is valid or not? We can simply do an adjacency check, as before.
 
-### Bit trick for ensuring a bitstring is a power of 2:
+</details>
+
+<details><summary>Ensuring a bitstring is a power of 2</summary>
 
 Any power of 2 will have a single bit flipped. If we subtract 1 from that number, it will result in a complementary bitstring that, bitwise-anded with the original, will always result in 0.
 
@@ -763,11 +771,13 @@ E.g.
 7&6: 0110 != 0
 ```
 
+</details>
+
 ## Validating all ships together in a single board
 
 Give individual valid ship position bitstrings, we can combine all these together into a single board using bitwise or operators. See the create_board function in verify.aleo to follow the code. Once all ships are on the board, we can count the total number of bits, which should be 14 exactly for a ship of length 5, 4, 3, and 2.
 
-Ensuring that players and boards cannot swap mid-game
+## Ensure that players and boards cannot swap mid-game
 
 Board states are represented with the board_state record. Each board has a flag indicating whether a game has been started with the board. This flag is set when offering a battleship game to an opponent, or accepting a battleship game from an opponent. Move records are created only in 3 ways:
 1. Offering a battleship game creates a dummy move record that sets the two players to the addresses set in the board state record.
