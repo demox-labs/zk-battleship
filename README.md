@@ -32,16 +32,20 @@ Most battleship representations in programs use a 64 character string or an arra
 Battleship is played with 4 different ship types -- a ship of length 5, length 4, length 3, and length 2. Some versions of battleship have an extra length 3 ship or another extra ship type, however, we will stick to the most basic version for this project. In order to be a valid ship placement, a ship must be placed vertically or horizontally (no diagonals). On a physical board, a ship cannot break across rows or intersect with another ship, but ships are allowed to touch one another.
 
 Similar to how we represent a board with a u64 bitstring, we can represent a ship horizontally as a bitstring. We "flip" the bits to represent a ship:
-Length 5: 11111 = 31u64
-Length 4: 1111  = 15u64
-Length 3: 111   = 7u64
-Length 2: 11    = 3u64
+| Length | Bitstring | u64 |
+| ------ | --------- | --- |
+| 5 | 11111 | 31u64|
+| 4 | 1111  | 15u64|
+| 3 | 111   | 7u64 |
+| 2 | 11    | 3u64 |
 
 We can also represent a ship vertically as a bitstring. To show this, we need 7 "unflipped" bits (zeroes) in between the flipped bits so that the bits are adjacent vertically.
-Length 5: 1 00000001 00000001 00000001 00000001 = 4311810305u64
-Length 4: 1 00000001 00000001 00000001          = 16843009u64
-Length 3: 1 00000001 00000001                   = 65793u64
-Length 2: 1 00000001                            = 257u64
+| Length | Bitstring | u64 |
+| --- | --- | --- |
+| 5 | 1 00000001 00000001 00000001 00000001 | 4311810305u64 |
+| 4 | 1 00000001 00000001 00000001          | 16843009u64 |
+| 3 | 1 00000001 00000001                   | 65793u64 |
+| 2 | 1 00000001                            | 257u64 |
 
 With a board model and ship bitstring models, we can now place ships on a board. Examples of valid board configurations:
 
