@@ -152,6 +152,17 @@ aleo run initialize_board 31u64 2207646875648u64 224u64 9042383626829824u64 aleo
 ✅ Executed 'battleship.aleo/initialize_board'
 ```
 
+Note, the output ships here is 9044591273705727u64, which in a bitstring is:
+```
+0 0 1 0 0 0 0 0
+0 0 1 0 0 0 1 0
+0 0 0 0 0 0 1 0
+0 0 0 0 0 0 1 0
+0 0 0 0 0 0 1 0
+0 0 0 0 0 0 0 0
+1 1 1 1 1 1 1 1
+```
+
 Now, we can accept Player 1's offer. Run `aleo run start_battleship 'board_state.record' 'move.record'`:
 ```bash
 aleo run start_battleship '{
@@ -298,7 +309,7 @@ aleo run play '{
 ✅ Executed 'battleship.aleo/play'
 ```
 
-Player 2 now has an updated board_state.record which includes their newly updated `played_tiles`, only containing the fire coordinate they just sent to Player 1. Player 1 now owns an updated move.record which contains the result of Player 1's previous move -- a miss is 0u64, whereas a hit is the coordinate of the hit in bitstring form. Since Player 1's first fire coordinate, 1u64, was a hit, the return hit or miss is also 1u64.
+Player 2 now has an updated board_state.record which includes their newly updated `played_tiles`, only containing the fire coordinate they just sent to Player 1. Player 1 now owns a new move.record which includes the `hits_and_misses` field. This contains only the result of Player 1's previous fire coordinate they had sent to Player 2. It will always be a single coordinate on the 8x8 grid if it's a hit. A miss is 0u64 (8x8 grid of 0s), whereas a hit is the u64 equivalent of their previous fire coordinate in bitstring form. If you check Player 2's ships configuration, you'll note their entire bottom row is covered by two ships, so sample valid hits on the bottom row would be: 1u64, 2u64, 4u64, 8u64, 16u64, 32u64, 64u64, and 128u64. Since Player 1's first fire coordinate (1u64) was a hit, the `hits_and_misses` field is also 1u64.
 
 Player 1's next move will consume this move.record, which will update Player 1's board with the hit-or-miss, as well as figure out the result of Player 2's fire coordinate. Now that Player 1 has some `played_tiles`, they can no longer choose an alread-played fire coordinate. For example, running `aleo run play 'board_state.record' 'move.record' 1u64` will fail, because 1u64 has already been played.
 
