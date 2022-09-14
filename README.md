@@ -734,8 +734,9 @@ We can make the observation that the original bitstring is always shifted by a p
 To ensure that the remaining number is a power of 2, we can use a bit trick. See the bit trick for ensuring a bitstring is a power of 2 section.
 
 In the code, you'll notice one extra step. Dividing a ship placement bitstring by a ship bitstring representation could result in 0, and then subtracting by 1 will result in an underflow. In that case, we know the ship placement is not valid, so we can set a number which is gauranteed to not be a power of 2.
+</details>
 
-Splitting a row or column:
+<details><summary>Splitting a row or column</summary>
 Follow the c_horizontal_check closure in verify.aleo to follow the code. Assume all the bits are adjacent (see the adjacency check section). The column case is trivial. We can be certain that if a ship bitstring splits columns, the division of that ship placement bitstring by its ship bitstring representation will not yield a power of 2, and it would have failed the adjacency check.
 
 The horizontal case must be checked because a split row bitstring could still contain a ship with adjacent bits. To make this check easier, we will condense the 64 bitstring into an 8 bitstring by taking it modulo 255. If we assume that a bitstring is not splitting a row, then taking the ship placement bitstring modulo 255 will yield an 8 bit valid bitstring. If the original ship placement bitstring is not valid, then we will have an invalid 8 bit bitstring. E.g.:  
